@@ -194,6 +194,11 @@ export default function Home() {
     }
   };
 
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  };
+
   return (
     <div className="pageShell">
       <header className="hero">
@@ -203,6 +208,9 @@ export default function Home() {
           Focused MVP: follow artists, poll Ticketmaster/Eventbrite on a schedule, detect updates, then send
           alerts through Discord, email, and SMS.
         </p>
+        <button type="button" className="logoutButton" onClick={() => void logout()}>
+          Log Out
+        </button>
       </header>
 
       {error ? <p className="errorBanner">{error}</p> : null}

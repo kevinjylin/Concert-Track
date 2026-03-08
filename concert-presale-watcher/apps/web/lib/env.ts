@@ -24,6 +24,9 @@ export const env = {
   twilioAuthToken: readEnv("TWILIO_AUTH_TOKEN"),
   twilioFromPhone: readEnv("TWILIO_FROM_PHONE"),
   twilioToPhone: readEnv("TWILIO_TO_PHONE"),
+  authPassword: readEnv("AUTH_PASSWORD"),
+  authCookieValue: readEnv("AUTH_COOKIE_VALUE"),
+  nodeEnv: readEnv("NODE_ENV"),
 };
 
 export const hasSupabaseConfig = (): boolean => {

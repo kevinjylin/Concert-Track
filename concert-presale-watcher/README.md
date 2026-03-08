@@ -41,6 +41,10 @@ Set whichever integrations you want:
 Optional poll protection:
 - Set `POLL_SECRET` in web and worker.
 
+Login gate (recommended for Vercel):
+- `AUTH_PASSWORD`: password users enter on `/login`
+- `AUTH_COOKIE_VALUE`: long random string used for session cookie validation
+
 ## Run
 
 From repo root:
@@ -67,6 +71,20 @@ Open `http://localhost:3000`.
 - `GET /api/alerts`
 - `POST /api/poll`
 - `GET /api/health`
+
+## Deploy To Vercel
+
+1. Import this repo into Vercel.
+2. Set the Vercel project **Root Directory** to `concert-presale-watcher/apps/web`.
+3. Add environment variables in Vercel Project Settings:
+   - Required: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+   - Recommended auth: `AUTH_PASSWORD`, `AUTH_COOKIE_VALUE`
+   - Optional integrations: Ticketmaster/Eventbrite/Spotify/Discord/Resend/Twilio/POLL_SECRET
+4. Deploy.
+
+Notes:
+- If `AUTH_PASSWORD` + `AUTH_COOKIE_VALUE` are set, middleware protects the site and API with a `/login` page.
+- `/api/poll` still works for your worker/cron when it sends `x-poll-secret` matching `POLL_SECRET`.
 
 ## Notes
 
