@@ -1,4 +1,5 @@
 import { env } from "../env";
+import { normalizeState, stateMatches } from "../state";
 import type { NormalizedEvent, WatchArtist } from "../types";
 import { asIsoOrNull, buildDedupeKey, normalizeStatus } from "../utils";
 
@@ -65,7 +66,7 @@ const normalizeEvents = (artist: WatchArtist, events: TicketmasterEvent[]): Norm
         title: event.name ?? `${artist.name} event`,
         venue: venue?.name ?? null,
         city: venue?.city?.name ?? artist.city,
-        state: venue?.state?.stateCode ?? artist.state,
+        state: venue?.state?.stateCode ?? null,
         country: venue?.country?.countryCode ?? artist.country,
         start_time: startTime,
         ticket_url: event.url ?? null,
@@ -74,7 +75,8 @@ const normalizeEvents = (artist: WatchArtist, events: TicketmasterEvent[]): Norm
         dedupe_key: buildDedupeKey(artist.name, venue?.name ?? null, startTime),
         raw_json: event,
       } satisfies NormalizedEvent;
-    });
+    })
+    .filter((event) => stateMatches(artist.state, event.state));
 };
 
 const runTicketmasterQuery = async (artist: WatchArtist, withLocation: boolean): Promise<TicketmasterEvent[]> => {
@@ -89,6 +91,11 @@ const runTicketmasterQuery = async (artist: WatchArtist, withLocation: boolean):
 
   if (withLocation && artist.city) {
     params.set("city", artist.city);
+  }
+
+  const normalizedArtistState = normalizeState(artist.state);
+  if (withLocation && normalizedArtistState && /^[A-Z]{2}$/.test(normalizedArtistState)) {
+    params.set("stateCode", normalizedArtistState);
   }
 
   if (withLocation && artist.country && artist.country.length === 2) {
@@ -116,7 +123,7 @@ export const fetchTicketmasterEvents = async (artist: WatchArtist): Promise<Norm
     return [];
   }
 
-  const withLocation = Boolean(artist.city || artist.country);
+  const withLocation = Boolean(artist.city || artist.state || artist.country);
   let events = await runTicketmasterQuery(artist, withLocation);
 
   if (events.length === 0 && withLocation) {

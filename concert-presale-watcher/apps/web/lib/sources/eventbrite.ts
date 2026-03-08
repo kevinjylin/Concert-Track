@@ -1,4 +1,5 @@
 import { env } from "../env";
+import { stateMatches } from "../state";
 import type { NormalizedEvent, WatchArtist } from "../types";
 import { asIsoOrNull, buildDedupeKey, normalizeStatus } from "../utils";
 
@@ -42,8 +43,12 @@ export const fetchEventbriteEvents = async (artist: WatchArtist): Promise<Normal
     page_size: "50",
   });
 
-  if (artist.city) {
+  if (artist.city && artist.state) {
+    params.set("location.address", `${artist.city}, ${artist.state}`);
+  } else if (artist.city) {
     params.set("location.address", artist.city);
+  } else if (artist.state) {
+    params.set("location.address", artist.state);
   }
 
   const response = await fetch(`https://www.eventbriteapi.com/v3/events/search/?${params.toString()}`, {
@@ -74,7 +79,7 @@ export const fetchEventbriteEvents = async (artist: WatchArtist): Promise<Normal
         title: event.name?.text ?? `${artist.name} event`,
         venue: event.venue?.name ?? null,
         city: event.venue?.address?.city ?? artist.city,
-        state: event.venue?.address?.region ?? artist.state,
+        state: event.venue?.address?.region ?? null,
         country: event.venue?.address?.country ?? artist.country,
         start_time: startTime,
         ticket_url: event.url ?? null,
@@ -83,5 +88,6 @@ export const fetchEventbriteEvents = async (artist: WatchArtist): Promise<Normal
         dedupe_key: buildDedupeKey(artist.name, event.venue?.name ?? null, startTime),
         raw_json: event,
       } satisfies NormalizedEvent;
-    });
+    })
+    .filter((event) => stateMatches(artist.state, event.state));
 };
