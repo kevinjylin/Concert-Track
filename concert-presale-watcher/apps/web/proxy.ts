@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { AUTH_COOKIE_NAME, isAuthConfigured, verifySessionValue } from "./lib/auth";
+import { getToken } from "next-auth/jwt";
 import { env } from "./lib/env";
 
-const PUBLIC_PATHS = new Set(["/login", "/api/health", "/api/auth/login", "/api/auth/logout"]);
+const isAuthEnabled = Boolean(
+  (env.authUsername && env.authPassword) ||
+    (env.googleClientId && env.googleClientSecret),
+);
 
 const isStaticAsset = (pathname: string): boolean => {
   return (
@@ -18,14 +21,14 @@ const isStaticAsset = (pathname: string): boolean => {
   );
 };
 
-export function proxy(request: NextRequest) {
-  if (!isAuthConfigured()) {
+export async function proxy(request: NextRequest) {
+  if (!isAuthEnabled) {
     return NextResponse.next();
   }
 
   const { pathname } = request.nextUrl;
 
-  if (isStaticAsset(pathname) || PUBLIC_PATHS.has(pathname)) {
+  if (isStaticAsset(pathname) || pathname.startsWith("/api/auth") || pathname === "/api/health") {
     return NextResponse.next();
   }
 
@@ -38,14 +41,22 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  const cookie = request.cookies.get(AUTH_COOKIE_NAME)?.value;
-  const isAuthenticated = verifySessionValue(cookie);
+  const token = await getToken({
+    req: request,
+    secret: env.authSecret,
+  });
 
-  if (isAuthenticated) {
-    if (pathname === "/login") {
+  const isAuthenticated = Boolean(token);
+
+  if (pathname === "/login") {
+    if (isAuthenticated) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
+    return NextResponse.next();
+  }
+
+  if (isAuthenticated) {
     return NextResponse.next();
   }
 

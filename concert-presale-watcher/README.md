@@ -42,8 +42,16 @@ Optional poll protection:
 - Set `POLL_SECRET` in web and worker.
 
 Login gate (recommended for Vercel):
-- `AUTH_PASSWORD`: password users enter on `/login`
-- `AUTH_COOKIE_VALUE`: long random string used for session cookie validation
+- `AUTH_SECRET`: random secret for Auth.js session signing
+- `NEXTAUTH_URL`: your app URL (for local: `http://localhost:3000`)
+- `AUTH_USERNAME`: credentials username
+- `AUTH_PASSWORD`: credentials password
+- `GOOGLE_CLIENT_ID`: Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
+
+Google OAuth callback URLs:
+- Local: `http://localhost:3000/api/auth/callback/google`
+- Production: `https://<your-vercel-domain>/api/auth/callback/google`
 
 ## Run
 
@@ -78,12 +86,13 @@ Open `http://localhost:3000`.
 2. Set the Vercel project **Root Directory** to `concert-presale-watcher/apps/web`.
 3. Add environment variables in Vercel Project Settings:
    - Required: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
-   - Recommended auth: `AUTH_PASSWORD`, `AUTH_COOKIE_VALUE`
+   - Recommended auth: `AUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_USERNAME`, `AUTH_PASSWORD`
+   - Optional Google sign-in: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
    - Optional integrations: Ticketmaster/Eventbrite/Spotify/Discord/Resend/Twilio/POLL_SECRET
 4. Deploy.
 
 Notes:
-- If `AUTH_PASSWORD` + `AUTH_COOKIE_VALUE` are set, middleware protects the site and API with a `/login` page.
+- If auth vars are set, Auth.js protects the site and API with a `/login` page.
 - `/api/poll` still works for your worker/cron when it sends `x-poll-secret` matching `POLL_SECRET`.
 
 ## Notes

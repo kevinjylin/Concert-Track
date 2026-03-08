@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { signOut } from "next-auth/react";
 import type { AlertRecord, EventRecord, PollResult, WatchArtist } from "../lib/types";
 
 interface HealthResponse {
@@ -9,6 +10,11 @@ interface HealthResponse {
     ticketmaster: boolean;
     eventbrite: boolean;
     spotify: boolean;
+  };
+  authConfigured: {
+    credentials: boolean;
+    google: boolean;
+    secret: boolean;
   };
   alertChannelsConfigured: {
     discord: boolean;
@@ -195,8 +201,7 @@ export default function Home() {
   };
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/login";
+    await signOut({ callbackUrl: "/login" });
   };
 
   return (
@@ -368,6 +373,9 @@ export default function Home() {
             <p>Ticketmaster key: {health.sourceKeysConfigured.ticketmaster ? "yes" : "no"}</p>
             <p>Eventbrite key: {health.sourceKeysConfigured.eventbrite ? "yes" : "no"}</p>
             <p>Spotify keypair: {health.sourceKeysConfigured.spotify ? "yes" : "no"}</p>
+            <p>Credentials login: {health.authConfigured.credentials ? "yes" : "no"}</p>
+            <p>Google login: {health.authConfigured.google ? "yes" : "no"}</p>
+            <p>Auth secret: {health.authConfigured.secret ? "yes" : "no"}</p>
             <p>Discord alerts: {health.alertChannelsConfigured.discord ? "yes" : "no"}</p>
             <p>Email alerts: {health.alertChannelsConfigured.email ? "yes" : "no"}</p>
             <p>SMS alerts: {health.alertChannelsConfigured.sms ? "yes" : "no"}</p>

@@ -24,9 +24,11 @@ export const env = {
   twilioAuthToken: readEnv("TWILIO_AUTH_TOKEN"),
   twilioFromPhone: readEnv("TWILIO_FROM_PHONE"),
   twilioToPhone: readEnv("TWILIO_TO_PHONE"),
+  authSecret: readEnv("AUTH_SECRET"),
+  authUsername: readEnv("AUTH_USERNAME"),
   authPassword: readEnv("AUTH_PASSWORD"),
-  authCookieValue: readEnv("AUTH_COOKIE_VALUE"),
-  nodeEnv: readEnv("NODE_ENV"),
+  googleClientId: readEnv("GOOGLE_CLIENT_ID"),
+  googleClientSecret: readEnv("GOOGLE_CLIENT_SECRET"),
 };
 
 export const hasSupabaseConfig = (): boolean => {

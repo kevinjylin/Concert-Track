@@ -12,6 +12,11 @@ export async function GET() {
       eventbrite: Boolean(env.eventbriteToken),
       spotify: Boolean(env.spotifyClientId && env.spotifyClientSecret),
     },
+    authConfigured: {
+      credentials: Boolean(env.authUsername && env.authPassword),
+      google: Boolean(env.googleClientId && env.googleClientSecret),
+      secret: Boolean(env.authSecret),
+    },
     alertChannelsConfigured: {
       discord: Boolean(env.discordWebhookUrl),
       email: Boolean(env.resendApiKey && env.alertFromEmail && env.alertToEmail),

@@ -2,11 +2,14 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -15,19 +18,19 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+      const nextPath = new URLSearchParams(window.location.search).get("next");
+      const result = await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+        callbackUrl: nextPath && nextPath.startsWith("/") ? nextPath : "/",
       });
 
-      const json = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        throw new Error(json.error ?? "Login failed");
+      if (result?.error) {
+        throw new Error("Invalid username or password");
       }
 
-      const nextPath = new URLSearchParams(window.location.search).get("next");
-      router.replace(nextPath && nextPath.startsWith("/") ? nextPath : "/");
+      router.replace(result?.url ?? "/");
       router.refresh();
     } catch (caught) {
       setError((caught as Error).message);
@@ -36,16 +39,33 @@ export default function LoginPage() {
     }
   };
 
+  const signInWithGoogle = async () => {
+    setGoogleBusy(true);
+    setError(null);
+    const nextPath = new URLSearchParams(window.location.search).get("next");
+
+    await signIn("google", {
+      callbackUrl: nextPath && nextPath.startsWith("/") ? nextPath : "/",
+    });
+  };
+
   return (
     <main className="loginShell">
       <section className="loginPanel">
         <p className="kicker">Concert Presale Watcher</p>
         <h1>Sign In</h1>
-        <p className="muted">Enter your deployment password to continue.</p>
+        <p className="muted">Use username/password or continue with Google.</p>
         <form className="stack" onSubmit={submit}>
           <input
-            type="password"
+            type="text"
             autoFocus
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            placeholder="Username"
+            required
+          />
+          <input
+            type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Password"
@@ -55,6 +75,9 @@ export default function LoginPage() {
             {busy ? "Signing in..." : "Sign In"}
           </button>
         </form>
+        <button type="button" className="googleButton" onClick={() => void signInWithGoogle()} disabled={googleBusy}>
+          {googleBusy ? "Redirecting..." : "Continue with Google"}
+        </button>
         {error ? <p className="errorBanner">{error}</p> : null}
       </section>
     </main>

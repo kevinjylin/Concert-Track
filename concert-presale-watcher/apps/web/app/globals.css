@@ -276,3 +276,7 @@ button:disabled {
   display: grid;
   gap: 10px;
 }
+
+.googleButton {
+  background: linear-gradient(135deg, #1a73e8, #4285f4);
+}
