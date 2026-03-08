@@ -1,6 +1,6 @@
 # Concert Presale Watcher (MVP)
 
-Watch-and-alert site for niche artists.
+Watch-and-alert site for artists.
 
 This repo is now set up as:
 - `apps/web`: Next.js dashboard + API routes
